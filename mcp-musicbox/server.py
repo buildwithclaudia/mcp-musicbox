@@ -47,43 +47,50 @@ def get_sonic_pi_log_path():
 
 
 def parse_sonic_pi_connection_params():
-    """Parse Sonic Pi's daemon log to extract connection parameters"""
-    log_path = get_sonic_pi_log_path()
-    
-    if not log_path.exists():
+    """Parse Sonic Pi's GUI log to extract connection parameters (v4.6+ format)"""
+    gui_log_path = Path.home() / ".sonic-pi" / "log" / "gui.log"
+
+    if not gui_log_path.exists():
         return None, None, None, None
-    
+
     try:
-        with open(log_path, 'r') as f:
-            log_content = f.read()
-        
-        # Parse daemon token
-        token_match = re.search(r'Daemon token:\s*([+-]?\d+)', log_content)
-        token = int(token_match.group(1)) if token_match else None
-        
-        # Parse the Ports JSON structure
-        ports_match = re.search(r'Ports:\s*({.*?})', log_content)
-        
+        # Read GUI log as binary since it contains binary data
+        import subprocess
+        result = subprocess.run(
+            ["strings", str(gui_log_path)],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        log_content = result.stdout
+
         gui_port = None
         osc_port = None
-        
-        if ports_match:
-            ports_text = ports_match.group(1)
-            
-            gui_match = re.search(r'"gui-send-to-spider"\s*=>\s*(\d+)', ports_text)
-            if gui_match:
-                gui_port = int(gui_match.group(1))
-            
-            osc_match = re.search(r'"osc-cues"\s*=>\s*(\d+)', ports_text)
-            if osc_match:
-                osc_port = int(osc_match.group(1))
-        
+        token = None
+
+        # Parse Spider port (gui-send-to-spider)
+        spider_match = re.search(r'Setting up OSC sender to Spider on port (\d+)', log_content)
+        if spider_match:
+            gui_port = int(spider_match.group(1))
+
+        # Parse Tau port (osc-cues)
+        tau_match = re.search(r'Setting up OSC sender to Tau on port (\d+)', log_content)
+        if tau_match:
+            osc_port = int(tau_match.group(1))
+
+        # Parse token from daemon_stdout lines (it's the large number)
+        token_candidates = re.findall(r'daemon_stdout: (\d+)', log_content)
+        for candidate in token_candidates:
+            if len(candidate) > 6:  # Token is a large number
+                token = int(candidate)
+                break
+
         ip_address = "127.0.0.1"
-        
+
         return ip_address, gui_port, osc_port, token
-        
+
     except Exception as e:
-        print(f"Error parsing daemon.log: {e}")
+        print(f"Error parsing gui.log: {e}")
         return None, None, None, None
 
 
