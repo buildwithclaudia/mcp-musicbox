@@ -22,11 +22,14 @@ To start using this MCP server with Claude, add the following entry to your `cla
 ```
 {
   "mcpServers": {
-    "sonic-pi": {
-      "args": [
-        "mcp-sonic-pi"
-      ],
-      "command": "/path/to/uvx"
+    "mcp-musicbox": {
+        "command": "/Users/booth/.local/bin/uv",  
+        "args": [
+          "--directory",
+          "/your/path/to/this/repo",
+          "run",
+          "server.py"
+        ]
     }
   }
 }
