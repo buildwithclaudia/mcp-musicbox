@@ -1,30 +1,35 @@
 [project]
-name = "sonicpi-mcp"
+name = "mcp-musicbox"
 version = "0.1.0"
-description = "Sonic Pi MCP Server - Local-first control interface for Sonic Pi"
-requires-python = ">=3.8"
+description = "MCP server for Sonic Pi"
+requires-python = ">=3.10"
 dependencies = [
-    "python-osc>=1.8.1",
-    "pydantic>=2.0.0",
+    "mcp>=0.1.0",
     "python-dotenv>=1.0.0",
-    "openai>=1.0.0",
-    "mcp>=1.0.0"
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "python-osc>=1.9.3",
+    "python-sonic>=0.4.4",
+    "ruff>=0.11.2",
+]
+readme = "README.md"
+license = {text = "Apache-2.0"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: Apache Software License",
 ]
 
+[project.scripts]
+mcp-musicbox = "mcp_musicbox.server:main"
+
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.ruff]
-line-length = 100
-target-version = "py38"
-
-[tool.ruff.lint]
-select = ["E", "F", "B", "I"]
-ignore = []
-
-[tool.mypy]
-python_version = "3.8"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["mcp-musicbox"]
